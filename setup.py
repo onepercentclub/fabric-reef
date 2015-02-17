@@ -1,6 +1,7 @@
 import os
 from setuptools import setup
-from reef_extras import __version__
+
+from fabric_reef import __version__
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()

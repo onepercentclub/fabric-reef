@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from git import Repo
 
 
-VERSION = (1,0,0, 'final')
+VERSION = (1,0,1, 'final')
 
 def _get_version():
     version = '%s.%s' % (VERSION[0], VERSION[1])
