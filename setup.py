@@ -13,7 +13,7 @@ setup(
     author_email="devteam@onepercentclub.com",
     url="http://onepercentclub.com",
     packages=['fabric_reef'],
-    install_requires=['fabric'],
+    install_requires=['fabric', 'GitPython'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
