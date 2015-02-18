@@ -13,7 +13,7 @@ def set_django_settings():
     env.django_settings = 'reef.settings.server_%s' % environment
 
 
-def generate_css():
+def generate_css(env='dev'):
     # Building CSS
     sudo('gem install bourbon neat')
     
@@ -23,7 +23,7 @@ def generate_css():
             run_web('neat install')
 
         run_web('npm install')
-        run_web('grunt build:css:all')
+        run_web('grunt build:css:all --env={}'.format(env))
 
 
 def prepare_django():
