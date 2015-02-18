@@ -5,6 +5,7 @@
 from fabric.api import env, cd, require, run, local, put
 from git import Repo
 from .context import run_web
+from .utils import status_update
 
 
 def update_tar(commit_id):
