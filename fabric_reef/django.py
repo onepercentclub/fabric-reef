@@ -2,8 +2,8 @@
 # Django Utils
 #
 
-from fabric.api import env, sudo, cd, require
-from .context import run_web
+from .context import *
+from .utils import *
 
 
 def set_django_settings():
