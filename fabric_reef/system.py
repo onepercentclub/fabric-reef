@@ -2,7 +2,7 @@
 # System Utils
 #
 
-from fabric.api import env, require, run
+from fabric.api import env, require, run, sudo
 from .utils import run_bg
 
 
@@ -10,8 +10,8 @@ def restart_site():
     """ Gracefully restart gunicorn using supervisor. """
     require('service_name')
 
-    run('supervisorctl reread')
-    run('supervisorctl restart %s' % env.service_name)
+    sudo('supervisorctl reread')
+    sudo('supervisorctl restart %s' % env.service_name)
 
     flush_memcache()
 

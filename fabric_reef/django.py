@@ -6,14 +6,7 @@ from .context import *
 from .utils import *
 
 
-def set_django_settings():
-    """ Environment-dependant Django settings. """
-    require('host')
-    environment = env.host.split('.', 1)[0]
-    env.django_settings = 'reef.settings.server_%s' % environment
-
-
-def generate_css(env='dev'):
+def generate_css():
     # Building CSS
     sudo('gem install bourbon neat')
     
@@ -23,13 +16,11 @@ def generate_css(env='dev'):
             run_web('neat install')
 
         run_web('npm install')
-        run_web('grunt build:css:all --env={}'.format(env))
+        run_web('grunt build:css:all --env={}'.format(env.sass_env))
 
 
 def prepare_django():
     """ Prepare a deployment. """
-    set_django_settings()
-
     require('django_settings')
 
     status_update('Preparing deployment.')
@@ -41,6 +32,12 @@ def prepare_django():
     with virtualenv():
         # TODO: Filter out the following messages:
         # "Could not find a tag or branch '<commit_id>', assuming commit."
+
+        # TODO: should we move these pip installs to ansible?
+        run_web('pip install --upgrade pip==6.0.8')
+        run_web('pip install wheel gunicorn')
+
+        # Pip install packages for app
         run_web('pip install --use-mirrors --use-wheel --process-dependency-links --find-links=https://stream.onepercentclub.com/wheelhouse/ -r requirements/requirements.txt')
 
         # Remove and compile the .pyc files.
@@ -54,5 +51,15 @@ def prepare_django():
         # Make sure the web user can read and write the static media dir.
         sudo('chmod a+rw static/media')
 
+        # Update database 
+        run_web('./manage.py sync_schemas --shared --noinput --settings=%s' % env.django_settings)
+        run_web('./manage.py migrate_schemas --shared --noinput --settings=%s' % env.django_settings)
         run_web('./manage.py sync_schemas --migrate --noinput --settings=%s' % env.django_settings)
+
+        # Create default fonts / css directories if they don't exist.
+        # This is needed on first deploy when there are no tenants.
+        run_web('mkdir -p frontend/static/fonts')
+        run_web('mkdir -p frontend/static/css')
+        
+        # Collect static assets
         run_web('./manage.py tenant_collectstatic -l -v 0 --noinput --settings=%s' % env.django_settings)
