@@ -35,7 +35,7 @@ def prepare_django():
 
         # TODO: should we move these pip installs to ansible?
         run_web('pip install --upgrade pip==6.0.8')
-        run_web('pip install wheel gunicorn')
+        run_web('pip install wheel')
 
         # Pip install packages for app
         run_web('pip install --use-mirrors --use-wheel --process-dependency-links --find-links=https://stream.onepercentclub.com/wheelhouse/ -r requirements/requirements.txt')
@@ -47,14 +47,18 @@ def prepare_django():
         # Fetch and compile translations
         run_web('./manage.py txpull --all --settings=%s' % env.django_settings)
         run_web('./manage.py compilepo --settings=%s' % env.django_settings)
+        run_web('./manage.py makejs --settings=%s' % env.django_settings)
 
         # Make sure the web user can read and write the static media dir.
         sudo('chmod a+rw static/media')
 
-        # Update database 
+        # Update public schema 
         run_web('./manage.py sync_schemas --shared --noinput --settings=%s' % env.django_settings)
         run_web('./manage.py migrate_schemas --shared --noinput --settings=%s' % env.django_settings)
-        run_web('./manage.py sync_schemas --migrate --noinput --settings=%s' % env.django_settings)
+        
+        # Update all schemas
+        run_web('./manage.py sync_schemas --noinput --settings=%s' % env.django_settings)
+        run_web('./manage.py migrate_schemas --noinput --settings=%s' % env.django_settings)
 
         # Create default fonts / css directories if they don't exist.
         # This is needed on first deploy when there are no tenants.
