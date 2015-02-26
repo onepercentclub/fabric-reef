@@ -8,21 +8,87 @@ from .context import run_web
 from .utils import status_update
 
 
+def assert_release_tag(commit, tag):
+    """
+    Make sure the given commit has the given tag and confirm if not so.
+    """
+    tags = get_commit_tags(commit)
+
+    # Match a single string as to ignore versions in "tag-<VERSION>"
+    if not tag in ' '.join(tags):
+        # It's not found, confirm with user
+        confirm_wrong_tag(commit, tag)
+
+
+def make_versioned_tag(tag, version):
+    """ Generate a versioned version of a tag. """
+    return '%s-%d' % (tag, version)
+
+
+def tag_commit(commit_id, tag):
+    """
+    Tag the specified commit and push it to the server.
+    Overwriting old tags with the same name.
+    """
+    local('git tag %s %s' % (tag, commit_id))
+    local('git push --tags origin %s' % tag)
+
+
+def find_latest_tag_version(tag):
+    """ Find the latest version for the given tag. Returns an integer. """
+    r = Repo()
+
+    version = 1
+    while make_versioned_tag(tag, version+1) in r.tags:
+        version += 1
+
+    status_update(
+        'Latest version for tag %s is %d: %s' % \
+            (tag, version, make_versioned_tag(tag, version))
+    )
+
+    return version
+
+
+def find_available_tag(tag):
+    """
+    Find the latest available version for a versioned tag of the form tag-N.
+    """
+    latest_version = find_latest_tag_version(tag)
+    new_tag = make_versioned_tag(tag, latest_version+1)
+
+    return new_tag
+
+
+def confirm_wrong_tag(commit, tag):
+    """ Confirm deployment when commit does not have expected tag. """
+    require('noinput')
+
+    print(red('WARNING: This commit does not have the %s tag.' % tag))
+
+    if not env.noinput:
+        confirmed = confirm('Are you really sure you want to deploy %s?' % commit.hexsha, default=False)
+
+        if not confirmed:
+            abort('Confirmation required to continue.')
+
+
 def update_tar(commit_id):
     """ Update the remote to given commit_id using tar. """
     require('directory')
 
-    status_update('Transferring archive of commit {0}.'.format(commit_id))
+    log = run_web('echo ${GITHUB_AUTH:?"Need to set GITHUB_AUTH"}')
+    if 'Need to set' in log:
+        raise Exception('GITHUB_AUTH env required for production deploy')
 
-    filename = '{0}.tbz2'.format(commit_id)
-    local('git archive {0} | bzip2 -c > {1}'.format(commit_id, filename))
-    put(filename, '/tmp')
+    status_update('Fetching archive of commit {0}.'.format(commit_id))
 
+    filepath = '/tmp/{0}.tar.gz'.format(commit_id)
+    run_web('curl -H "Authorization: token $GITHUB_AUTH" -L https://api.github.com/repos/onepercentclub/reef/tarball/{0} > {1}'.format(commit_id, filepath))
+    
     with cd(env.directory):
-        run_web('tar xjf /tmp/{0}'.format(filename))
-        run('rm /tmp/{0}'.format(filename))
-
-    local('rm -f {0}'.format(filename))
+        run_web('tar zxvf {0} --strip 1'.format(filepath))
+        run_web('rm {0}'.format(filepath))
 
 
 def describe_commit(commit):
