@@ -44,11 +44,6 @@ def prepare_django():
         run_web('find . -name \*.pyc -delete')
         run_web('./manage.py compile_pyc --settings=%s' % env.django_settings)
 
-        # Fetch and compile translations
-        run_web('./manage.py txpull --all --settings=%s' % env.django_settings)
-        run_web('./manage.py compilepo --settings=%s' % env.django_settings)
-        run_web('./manage.py makejs --settings=%s' % env.django_settings)
-
         # Make sure the web user can read and write the static media dir.
         sudo('chmod a+rw static/media')
 
@@ -59,6 +54,11 @@ def prepare_django():
         # Update all schemas
         run_web('./manage.py sync_schemas --noinput --settings=%s' % env.django_settings)
         run_web('./manage.py migrate_schemas --noinput --settings=%s' % env.django_settings)
+
+        # Fetch and compile translations
+        run_web('./manage.py txpull --all --settings=%s' % env.django_settings)
+        run_web('./manage.py compilepo --settings=%s' % env.django_settings)
+        run_web('./manage.py makejs --settings=%s' % env.django_settings)
 
         # Create default fonts / css directories if they don't exist.
         # This is needed on first deploy when there are no tenants.
