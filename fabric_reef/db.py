@@ -65,7 +65,7 @@ def restore_db():
 def replace_db(filename="./dump.sql.bz2", db_name="reef"):
     local("dropdb {0}".format(db_name))
     local("createdb {0}".format(db_name))
-    local("bunzip2 {0} -c | psql {1}".format(filename, reef))
+    local("bunzip2 {0} -c | psql {1}".format(filename, db_name))
 
 
 def set_tenant_domains(domain_base="localhost", db_name="reef"):
