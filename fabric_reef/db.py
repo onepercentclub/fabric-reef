@@ -58,17 +58,17 @@ def restore_db():
             get(remote_path="{0}/{1}".format(backup_dir, filename), local_path="./dump.sql.bz2")
             confirmed = confirm('Are you sure you want to replace the current database?', default=False)
             if confirmed:
-                replace_db("./dump.sql.bz2")
+                replace_db()
                 set_tenant_domains()
 
 
-def replace_db(filename="./dump.sql.bz2", db_name="saas"):
+def replace_db(filename="./dump.sql.bz2", db_name="reef"):
     local("dropdb {0}".format(db_name))
     local("createdb {0}".format(db_name))
-    local("bunzip2 {0} -c | psql {1}".format(filename, db_name))
+    local("bunzip2 {0} -c | psql {1}".format(filename, reef))
 
 
-def set_tenant_domains(domain_base="localhost", db_name="saas"):
+def set_tenant_domains(domain_base="localhost", db_name="reef"):
     cmd = "UPDATE clients_client SET domain_url = CONCAT(schema_name, '.{0}')".format(domain_base)
     local('echo "{0}" | psql {1}'.format(cmd, db_name))
 
