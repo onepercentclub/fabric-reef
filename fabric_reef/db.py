@@ -3,8 +3,14 @@
 #
 
 from datetime import datetime
-from fabric.api import env
+from fabric.api import env, roles, task, require, settings, cd, get, run, local
 from .context import run_web
+from fabric.contrib.console import confirm
+
+
+env.roledefs = {
+    'backup': ['backups@bluebucket.onepercentclub.com']
+}
 
 
 def backup_db(db_username="reef", db_name="reef", commit=None):
@@ -33,10 +39,13 @@ def backup_db(db_username="reef", db_name="reef", commit=None):
     run_web("rm /tmp/{0}".format(backup_name))
 
 
-
 @roles('backup')
 @task
 def restore_db():
+    """
+    Restore database from backup server and restore it.
+    This will also rename domain_url to *.localhost.
+    """
     backup_dir = "/home/backups/saas-backups/saas/"
     with cd(backup_dir):
         output = run("ls -1t *.bz2 | head -1")
