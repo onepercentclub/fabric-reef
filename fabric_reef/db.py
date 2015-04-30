@@ -8,11 +8,6 @@ from .context import run_web
 from fabric.contrib.console import confirm
 
 
-env.roledefs = {
-    'backup': ['backups@bluebucket.onepercentclub.com']
-}
-
-
 def backup_db(db_username="reef", db_name="reef", commit=None):
     """ 
         Function to locally backup the database, copy it to the backup server, and then clean the local server backup again. 
@@ -46,8 +41,7 @@ def restore_db():
     Restore database from backup server and restore it.
     This will also rename domain_url to *.localhost.
     """
-    backup_dir = "/home/backups/saas-backups/saas/"
-    with cd(backup_dir):
+    with cd(env.backup_dir):
         output = run("ls -1t *.bz2 | head -1")
         try:
             filename = output.split()[0]
@@ -55,7 +49,7 @@ def restore_db():
             print "No database backup file found"
 
         if filename:
-            get(remote_path="{0}/{1}".format(backup_dir, filename), local_path="./dump.sql.bz2")
+            get(remote_path="{0}/{1}".format(env.backup_dir, filename), local_path="./dump.sql.bz2")
             confirmed = confirm('Are you sure you want to replace the current database?', default=False)
             if confirmed:
                 replace_db()
@@ -81,13 +75,4 @@ def unpack_db(filename="dump.sql.bz2"):
         local("bunzip2 {0}".format(filename))
     except IndexError:
         print "No database file found"
-
-
-@task
-def sync_media(local_static_dir="static/"):
-    """ Sync media from production backup to local. """
-    media_dir = "onepercentclub-backups/onepercentsite/media-backup/media"
-    backup_host = "backups@bluebucket.onepercentclub.com"
-    local("rsync -chavzP --stats {0}:{1} {2}".format(backup_host, media_dir, local_static_dir))
-    print("Done. Now use 'runserver --nostatic' or delete all entries in 'thumbnail_kvstore' table.")
 
