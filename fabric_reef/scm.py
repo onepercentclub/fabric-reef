@@ -31,7 +31,7 @@ def tag_commit(commit_id, tag):
     Overwriting old tags with the same name.
     """
     local('git tag %s %s' % (tag, commit_id))
-    local('git push --tags origin %s' % tag)
+    local('git push origin refs/tags/{0}:refs/tags/{0}'.format(tag))
 
 
 def find_latest_tag_version(tag):
