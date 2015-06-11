@@ -11,7 +11,7 @@ def restart_site():
     """ Gracefully restart gunicorn using supervisor. """
     require('service_name')
 
-    run_web('ln -s /var/www/maintenance.html /var/www/maintenance_on.html')
+    run_web('ln -sf /var/www/maintenance.html /var/www/maintenance_on.html')
 
     sudo('supervisorctl reread')
     sudo('supervisorctl restart %s' % env.service_name)
