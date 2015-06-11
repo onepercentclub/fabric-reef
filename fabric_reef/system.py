@@ -4,7 +4,7 @@
 
 from fabric.api import env, require, run, sudo
 from .utils import run_bg
-from .context import virtualenv
+from .context import virtualenv, run_web
 
 
 def restart_site():
