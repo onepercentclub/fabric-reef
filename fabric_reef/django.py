@@ -69,11 +69,3 @@ def prepare_django():
 
         generate_ember();
         run_web('./manage.py makejs --settings=%s' % env.django_settings)
-
-        # Create default fonts / css directories if they don't exist.
-        # This is needed on first deploy when there are no tenants.
-        run_web('mkdir -p frontend/static/fonts')
-        run_web('mkdir -p frontend/static/css')
-
-        # Collect static assets
-        run_web('./manage.py tenant_collectstatic -l -v 0 --noinput --settings=%s' % env.django_settings)
