@@ -21,9 +21,9 @@ def generate_css():
 
 def generate_ember():
     with frontend():
-        run_web('npm install --dev')
         run_web('bower install')
-        run_web('LOCALES=all CLIENTS=all ember build')
+        run_web('./patch.sh')
+        run_web('LOCALES=all CLIENTS=all ./node_modules/.bin/ember build')
 
 
 def prepare_django():
