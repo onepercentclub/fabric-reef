@@ -64,7 +64,7 @@ def prepare_django():
         run_web('./manage.py migrate_schemas --noinput --settings=%s' % env.django_settings)
 
         # Fetch and compile translations
-        run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
+#        run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
         run_web('./manage.py txpull --frontend --deploy --all --settings=%s' % env.django_settings)
         run_web('./manage.py compilepo --settings=%s' % env.django_settings)
 
@@ -74,3 +74,5 @@ def prepare_django():
         # This is needed on first deploy when there are no tenants.
         run_web('mkdir -p frontend/static/fonts')
         run_web('mkdir -p frontend/static/css')
+
+        run_web('./manage.py collectstatic -l -v 0 --noinput --settings=%s' % env.django_settings)
