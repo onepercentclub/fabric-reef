@@ -1,4 +1,4 @@
-# 
+#
 # Django Utils
 #
 
@@ -9,7 +9,7 @@ from .utils import *
 def generate_css():
     # Building CSS
     sudo('gem install bourbon neat')
-    
+
     with frontend():
         with cd('sass/lib'):
             run_web('bourbon install')
@@ -17,6 +17,14 @@ def generate_css():
 
         run_web('npm install')
         run_web('grunt build:css:all --env={}'.format(env.sass_env))
+
+
+def generate_ember():
+    sudo('npm install -g ember-cli')
+    with frontend():
+        run_web('bower install')
+        run_web('./patch.sh')
+        run_web('LOCALES=all CLIENTS=all ember build --environment={}'.format(env.effective_roles[0]))
 
 
 def prepare_django():
@@ -47,23 +55,24 @@ def prepare_django():
         # Make sure the web user can read and write the static media dir.
         sudo('chmod a+rw static/media')
 
-        # Update public schema 
+        # Update public schema
         run_web('./manage.py sync_schemas --shared --noinput --settings=%s' % env.django_settings)
         run_web('./manage.py migrate_schemas --shared --noinput --settings=%s' % env.django_settings)
-        
+
         # Update all schemas
         run_web('./manage.py sync_schemas --noinput --settings=%s' % env.django_settings)
         run_web('./manage.py migrate_schemas --noinput --settings=%s' % env.django_settings)
 
         # Fetch and compile translations
-        run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
+#        run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
+        run_web('./manage.py txpull --frontend --deploy --all --settings=%s' % env.django_settings)
         run_web('./manage.py compilepo --settings=%s' % env.django_settings)
-        run_web('./manage.py makejs --settings=%s' % env.django_settings)
+
+        generate_ember();
 
         # Create default fonts / css directories if they don't exist.
         # This is needed on first deploy when there are no tenants.
         run_web('mkdir -p frontend/static/fonts')
         run_web('mkdir -p frontend/static/css')
-        
-        # Collect static assets
-        run_web('./manage.py tenant_collectstatic -l -v 0 --noinput --settings=%s' % env.django_settings)
+
+        run_web('./manage.py collectstatic -l -v 0 --noinput --settings=%s' % env.django_settings)
