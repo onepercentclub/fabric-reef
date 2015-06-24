@@ -20,10 +20,10 @@ def generate_css():
 
 
 def generate_ember():
+    sudo('npm install -g ember-cli')
     with frontend():
-        run_web('npm install --dev')
         run_web('bower install')
-        run_web('LOCALES=all CLIENTS=all ember build')
+        run_web('LOCALES=all CLIENTS=all ember build --environment={}'.format(env.effective_roles[0]))
 
 
 def prepare_django():
@@ -63,17 +63,13 @@ def prepare_django():
         run_web('./manage.py migrate_schemas --noinput --settings=%s' % env.django_settings)
 
         # Fetch and compile translations
-        #run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
+        run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
         run_web('./manage.py txpull --frontend --deploy --all --settings=%s' % env.django_settings)
         run_web('./manage.py compilepo --settings=%s' % env.django_settings)
 
         generate_ember();
-        run_web('./manage.py makejs --settings=%s' % env.django_settings)
 
         # Create default fonts / css directories if they don't exist.
         # This is needed on first deploy when there are no tenants.
         run_web('mkdir -p frontend/static/fonts')
         run_web('mkdir -p frontend/static/css')
-
-        # Collect static assets
-        run_web('./manage.py tenant_collectstatic -l -v 0 --noinput --settings=%s' % env.django_settings)
