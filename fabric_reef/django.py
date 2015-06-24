@@ -23,7 +23,6 @@ def generate_ember():
     sudo('npm install -g ember-cli')
     with frontend():
         run_web('bower install')
-        run_web('./patch.sh')
         run_web('LOCALES=all CLIENTS=all ember build --environment={}'.format(env.effective_roles[0]))
 
 
