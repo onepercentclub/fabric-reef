@@ -5,40 +5,44 @@
 from .context import *
 from .utils import *
 
+def prepare_frontend():
+    status_update('Preparing frontend...')
 
-def generate_css():
-    # Building CSS
+
     sudo('gem install bourbon neat')
-
+    sudo('npm install -g ember-cli@0.2.5 --unsafe-perm')
+    
     with frontend():
+        run_web('npm i && bower i')
+
         with cd('sass/lib'):
             run_web('bourbon install')
             run_web('neat install')
 
-        run_web('npm install')
-        run_web('grunt build:css:all --env={}'.format(env.sass_env))
 
+def generate_frontend():
+    status_update('Generating frontend...')
 
-def generate_ember():
-    sudo('npm install -g ember-cli')
+    # fetch translations for api and frontend
+    with virtualenv():
+        run_web('./pull_translations.py --all')
+    
     with frontend():
-        run_web('bower install')
+        # Building CSS
+        run_web('grunt build:css:all --env={}'.format(env.sass_env))
         run_web('LOCALES=all CLIENTS=all ember build --environment={}'.format(env.effective_roles[0]))
 
 
-def prepare_django():
-    """ Prepare a deployment. """
+def prepare_backend():
     require('django_settings')
 
-    status_update('Preparing deployment.')
-
-    generate_css()
-
-    get_geoip_data()
+    status_update('Preparing Django...')
 
     with virtualenv():
         # TODO: Filter out the following messages:
         # "Could not find a tag or branch '<commit_id>', assuming commit."
+
+        get_geoip_data()
 
         # TODO: should we move these pip installs to ansible?
         run_web('pip install --upgrade pip==6.0.8')
@@ -54,6 +58,19 @@ def prepare_django():
         # Make sure the web user can read and write the static media dir.
         sudo('chmod a+rw static/media')
 
+
+def update_app():
+    """ Prepare a deployment. """
+    require('django_settings')
+
+    status_update('Updating app...')
+    generate_frontend()
+
+    with virtualenv():
+
+        # compile api translations
+        run_web('./manage.py compilepo --settings=%s' % env.django_settings)
+
         # Update public schema
         run_web('./manage.py sync_schemas --shared --noinput --settings=%s' % env.django_settings)
         run_web('./manage.py migrate_schemas --shared --noinput --settings=%s' % env.django_settings)
@@ -61,17 +78,5 @@ def prepare_django():
         # Update all schemas
         run_web('./manage.py sync_schemas --noinput --settings=%s' % env.django_settings)
         run_web('./manage.py migrate_schemas --noinput --settings=%s' % env.django_settings)
-
-        # Fetch and compile translations
-#        run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
-        run_web('./manage.py txpull --frontend --deploy --all --settings=%s' % env.django_settings)
-        run_web('./manage.py compilepo --settings=%s' % env.django_settings)
-
-        generate_ember();
-
-        # Create default fonts / css directories if they don't exist.
-        # This is needed on first deploy when there are no tenants.
-        run_web('mkdir -p frontend/static/fonts')
-        run_web('mkdir -p frontend/static/css')
 
         run_web('./manage.py collectstatic -l -v 0 --noinput --settings=%s' % env.django_settings)

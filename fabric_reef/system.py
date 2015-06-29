@@ -11,8 +11,6 @@ def restart_site():
     """ Gracefully restart gunicorn using supervisor. """
     require('service_name')
 
-    run_web('ln -sf /var/www/maintenance.html /var/www/maintenance_on.html')
-
     sudo('supervisorctl reread')
     sudo('supervisorctl restart %s' % env.service_name)
 
@@ -24,8 +22,6 @@ def restart_site():
 
     with virtualenv():
         run_web('./manage.py warmup --settings=%s' % env.django_settings)
-
-    run_web('rm /var/www/maintenance_on.html')
 
 
 def flush_memcache():
