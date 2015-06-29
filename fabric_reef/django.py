@@ -63,7 +63,7 @@ def prepare_django():
         run_web('./manage.py migrate_schemas --noinput --settings=%s' % env.django_settings)
 
         # Fetch and compile translations
-        run_web('./manage.py txtranslate --all --settings=%s' % env.django_settings)
+        run_web('./manage.py txtranslate --settings=%s' % env.django_settings)
         run_web('./manage.py txpull --deploy --all --settings=%s' % env.django_settings)
         run_web('./manage.py txpull --frontend --deploy --all --settings=%s' % env.django_settings)
         run_web('./manage.py compilepo --settings=%s' % env.django_settings)
