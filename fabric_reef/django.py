@@ -13,12 +13,13 @@ def prepare_frontend():
         run_web('npm i && bower i')
 
 
-def generate_frontend():
-    status_update('Generating frontend...')
+def update_frontend(pull_translations=True):
+    status_update('Updating frontend...')
 
     # fetch translations for api and frontend
-    with virtualenv():
-        run_web('./pull_translations.py --all')
+    if pull_translations:
+        with virtualenv():
+            run_web('./pull_translations.py --all')
     
     with frontend():
         # Building CSS
@@ -28,8 +29,7 @@ def generate_frontend():
 
 def prepare_backend():
     require('django_settings')
-
-    status_update('Preparing Django...')
+    status_update('Preparing backend...')
 
     with virtualenv():
         # TODO: Filter out the following messages:
@@ -52,12 +52,10 @@ def prepare_backend():
         sudo('chmod a+rw static/media')
 
 
-def update_app():
+def update_backend():
     """ Prepare a deployment. """
     require('django_settings')
-
-    status_update('Updating app...')
-    generate_frontend()
+    status_update('Updating backend...')
 
     with virtualenv():
 
