@@ -7,17 +7,10 @@ from .utils import *
 
 def prepare_frontend():
     status_update('Preparing frontend...')
-
-
-    sudo('gem install bourbon neat')
     sudo('npm install -g ember-cli@0.2.5 --unsafe-perm')
     
     with frontend():
         run_web('npm i && bower i')
-
-        with cd('sass/lib'):
-            run_web('bourbon install')
-            run_web('neat install')
 
 
 def generate_frontend():
@@ -29,7 +22,7 @@ def generate_frontend():
     
     with frontend():
         # Building CSS
-        run_web('grunt build:css:all --env={}'.format(env.sass_env))
+        run_web('grunt build)
         run_web('LOCALES=all CLIENTS=all ember build --environment={}'.format(env.effective_roles[0]))
 
 
