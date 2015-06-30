@@ -22,7 +22,7 @@ def generate_frontend():
     
     with frontend():
         # Building CSS
-        run_web('grunt build)
+        run_web('grunt build')
         run_web('LOCALES=all CLIENTS=all ember build --environment={}'.format(env.effective_roles[0]))
 
 
