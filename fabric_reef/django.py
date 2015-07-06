@@ -13,7 +13,7 @@ def prepare_frontend():
         run_web('npm i && bower i')
 
 
-def update_frontend(pull_translations=True):
+def build_frontend(pull_translations=True):
     status_update('Updating frontend...')
 
     # fetch translations for api and frontend
@@ -24,7 +24,17 @@ def update_frontend(pull_translations=True):
     with frontend():
         # Building CSS
         run_web('grunt build')
-        run_web('LOCALES=all CLIENTS=all ember build --environment={}'.format(env.effective_roles[0]))
+
+        # Delete any existing build directory
+        run_web('rm -Rf dist-latest')
+        run_web('LOCALES=all CLIENTS=all ember build --output-path=dist-latest --environment={}'.format(env.effective_roles[0]))
+
+
+def update_frontend():
+    with frontend():
+        run_web('rm -Rf dist-previous')
+        run_web('mv dist dist-previous')
+        run_web('mv dist-latest dist')
 
 
 def prepare_backend():
