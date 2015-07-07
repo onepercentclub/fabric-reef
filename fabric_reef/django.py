@@ -19,7 +19,7 @@ def build_frontend(pull_translations=True):
     # fetch translations for api and frontend
     if pull_translations:
         with virtualenv():
-            run_web('./pull_translations.py --all')
+            run_web('./pull_translations.py --all --deploy')
     
     with frontend():
         # Building CSS
