@@ -29,7 +29,7 @@ def virtualenv():
 def maintenance():
     run_web('ln -sf /var/www/maintenance.html /var/www/maintenance_on.html')
     yield
-    run_web('rm /var/www/maintenance_on.html')
+    run_web('rm -f /var/www/maintenance_on.html')
 
 
 @contextmanager
