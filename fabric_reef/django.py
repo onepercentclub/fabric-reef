@@ -27,7 +27,13 @@ def build_frontend(pull_translations=True):
 
         # Delete any existing build directory
         run_web('rm -Rf dist-latest')
-        run_web('LOCALES=all CLIENTS=all ember build --output-path=dist-latest --environment={}'.format(env.effective_roles[0]))
+
+        if env.effective_roles[0] == 'staging':
+            ember_env = 'production'
+        else:
+            ember_env = env.effective_roles[0]
+        
+        run_web('LOCALES=all CLIENTS=all ember build --output-path=dist-latest --environment={}'.format(ember_env))
 
 
 def update_frontend():
