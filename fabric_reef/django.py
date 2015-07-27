@@ -8,7 +8,7 @@ from .utils import *
 def prepare_frontend():
     status_update('Preparing frontend...')
     sudo('npm install -g ember-cli@0.2.5 --unsafe-perm')
-    
+
     with frontend():
         run_web('npm i && bower i')
 
@@ -20,7 +20,7 @@ def build_frontend(pull_translations=True):
     if pull_translations:
         with virtualenv():
             run_web('./pull_translations.py --all --deploy')
-    
+
     with frontend():
         # Building CSS
         run_web('grunt build')
@@ -32,7 +32,7 @@ def build_frontend(pull_translations=True):
             ember_env = 'production'
         else:
             ember_env = env.effective_roles[0]
-        
+
         run_web('LOCALES=all CLIENTS=all ember build --output-path=dist-latest --environment={}'.format(ember_env))
 
 
@@ -58,10 +58,9 @@ def prepare_backend():
         run_web('pip install wheel')
 
         # Pip install packages for app
-        run_web('pip install --use-mirrors --use-wheel --process-dependency-links --find-links=https://stream.onepercentclub.com/wheelhouse/ -r requirements/requirements.txt')
-
         # Remove and compile the .pyc files.
         run_web('find . -name \*.pyc -delete')
+        run_web('find ../env/src/ -name \*.pyc -delete')
         run_web('./manage.py compile_pyc --settings=%s' % env.django_settings)
 
         # Make sure the web user can read and write the static media dir.
