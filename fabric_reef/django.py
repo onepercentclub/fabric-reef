@@ -58,6 +58,7 @@ def prepare_backend():
         run_web('pip install wheel')
 
         # Pip install packages for app
+        run_web('pip install --use-mirrors --use-wheel --process-dependency-links --find-links=https://stream.onepercentclub.com/wheelhouse/ -r requirements/requirements.txt')
         # Remove and compile the .pyc files.
         run_web('find . -name \*.pyc -delete')
         run_web('find ../env/src/ -name \*.pyc -delete')
